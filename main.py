@@ -6,6 +6,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.scrollview import ScrollView
 
 
 class MenuScreen(Screen):
@@ -15,6 +16,11 @@ class MenuScreen(Screen):
 class Next(Screen):
     pass
 
+class AdPan(Screen):
+    pass
+
+class Row():
+    pass
 
 def entarabartion(string):
     tarabara = """ 1234567890-=!@#$%^&*()_+!"№;%:?*(),./\|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>[];'qwertyuiopasdfghjklzxcvbnmЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮйцукенгшщзхъфывапролджэжячсмитьбю."""
@@ -94,11 +100,78 @@ class MyApp(App):
         print(instance.text, self.w1.text, self.w2.text)
         print('Нажатие')
         checkme = checkSQL(self.w1.text, self.w2.text)
+        print(checkme[2])
         try:
-            if checkme[1] == self.w2.text:
+            if checkme[0] == self.w1.text and checkme[1] == self.w2.text:
                 self.sm.current = 'secscreen'
+                if checkme[2] == 'admin':
+                    self.adminpanel = Button(text='Админская панель', on_press=self.Admpan)
+                    self.bottommenu.add_widget(self.adminpanel)
+                    self.sc3 = Screen(name='adminpanel')
+                    self.sm.add_widget(self.sc3)
+                    print('Adminpanel suc created')
+
         except:
             pass
+
+    def Admpan(self, instance):
+        print('Admin table')
+        self.sm.current = 'adminpanel'
+        self.data = self.ASQL()
+        print(self.data)
+        self.userlist = AnchorLayout(anchor_y='top')
+        self.col = BoxLayout(orientation='vertical', size_hint=(1, .2))
+
+        for user in self.data:
+            self.row = BoxLayout(orientation='horizontal')
+            for u in user:
+                self.row.add_widget(Button(text=u))
+            self.col.add_widget(self.row)
+
+        self.userlist.add_widget(self.col)
+
+        self.botto = AnchorLayout(anchor_y='bottom')
+        self.bom = BoxLayout(size_hint=(.4, .15))
+        self.botto.add_widget(self.bom)
+        self.side = BoxLayout(size_hint=(.1, 1))
+
+        self.backonsec = Button(text='Назад', on_press=self.backonsecscr)
+        self.side.add_widget(self.backonsec)
+        self.horiz = BoxLayout(orientation='horizontal')
+
+        self.scroll = ScrollView()
+        self.scroll.add_widget(self.userlist)
+
+        self.horiz.add_widget(self.side)
+        self.horiz.add_widget(self.scroll)
+
+        self.sc3.add_widget(self.horiz)
+
+    def backonsecscr(self, instance):
+        self.sm.current = 'secscreen'
+
+    def ASQL(self):
+        try:
+            connect = sqlite3.connect("mydatabase.db")
+        except:
+            pass
+        cursor = connect.cursor()
+
+        text = "SELECT * FROM table1"
+
+        cursor.execute(text)
+        results = cursor.fetchall()
+
+        users = []
+
+        for result in results:
+            if result not in users:
+                users.append(result)
+
+        connect.commit()
+        connect.close()
+
+        return users
 
     def entarabartion(self, instance):
         string = self.z1.text
